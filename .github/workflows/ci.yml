@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: ["main"]
+    branches: [ "main" ]
 
 jobs:
   build-and-test:
@@ -18,10 +18,26 @@ jobs:
       with:
         go-version: '1.21'
 
-    - name: 3. 执行自动化测试
+    - name: 3. 执行自动化测试 (所有阶段都会执行)
       run: go test ./...
 
-    - name: 4. 模拟打包并打印防伪码
+    # 🚨 核心分水岭：下面的步骤，只有代码真正并入 main 分支时才会执行！
+    # 提 PR 时，流水线走到上一步测试通过就结束了，绝不制造垃圾镜像。
+    - name: 4. 登录阿里云 ACR
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
-        echo "代码测试全部通过！"
-        echo "准备构建的镜像防伪码是: ${{ github.sha }}"
+        docker login -u "${{ secrets.ALIYUN_REGISTRY_USER }}" -p "${{ secrets.ALIYUN_REGISTRY_PASSWORD }}" crpi-xb7f9irfobdd1w7v.cn-hangzhou.personal.cr.aliyuncs.com
+
+    - name: 5. 注入防伪码并推上云端
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      env:
+        IMAGE_TAG: ${{ github.sha }}
+        REPO_URL: crpi-xb7f9irfobdd1w7v.cn-hangzhou.personal.cr.aliyuncs.com/canlia-sre/ci_test
+      run: |
+        echo "开始构建镜像: $REPO_URL:$IMAGE_TAG"
+        docker build -t $REPO_URL:$IMAGE_TAG .
+        
+        echo "开始推送镜像至阿里云..."
+        docker push $REPO_URL:$IMAGE_TAG
+        
+        echo "🎉 镜像推送成功！请去阿里云控制台查收防伪码: $IMAGE_TAG"
