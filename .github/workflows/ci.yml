@@ -1,0 +1,26 @@
+name: SRE Pipeline
+
+# 触发条件：当有人向 main 分支 push 代码，或者发起 PR 时触发
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest # GitHub 免费分配的临时服务器
+    steps:
+    - name: 1. 拉取仓库代码
+      uses: actions/checkout@v3
+
+    - name: 2. 安装 Go 语言环境
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: 3. 执行自动化测试 (拦截点)
+      run: go test ./...
+
+    - name: 4. 测试通过后，打包 Docker 镜像
+      run: docker build -t sre-agent:latest .
