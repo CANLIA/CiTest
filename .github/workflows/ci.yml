@@ -16,7 +16,7 @@ jobs:
     - name: 2. 安装 Go 语言环境
       uses: actions/setup-go@v4
       with:
-        go-version: '1.21'
+        go-version: '1.23'
 
     - name: 3. 执行自动化测试 (所有阶段都会执行)
       run: go test ./...
