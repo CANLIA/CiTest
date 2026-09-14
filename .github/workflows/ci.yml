@@ -3,6 +3,10 @@ name: SRE Pipeline
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - 'deploy/**'
+      - '.github/**'
+      - 'README.md' 
   pull_request:
     branches: [ "main" ]
 
@@ -41,3 +45,17 @@ jobs:
         docker push $REPO_URL:$IMAGE_TAG
         
         echo "🎉 镜像推送成功！请去阿里云控制台查收防伪码: $IMAGE_TAG"
+    - name: 6. [CI/CD 桥接] 自动修改 YAML 并推送到 GitHub
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        # 1. 告诉 Git 机器人我是谁
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+        # 2. 用 Linux 的 sed 命令，暴力替换 deployment.yaml 里的旧标签 (或者 Helm 的 values.yaml 里的 tag)
+        sed -i "s|image: .*:.*|image: crpi-...aliyuncs.com/canlia-sre/ci_test:${{ github.sha }}|g" deploy/deployment.yaml
+        
+        # 3. 机器人自己把改好的 YAML 提交并 push 到 main 分支
+        git add deploy/deployment.yaml
+        git commit -m "🤖 CD Trigger: update image tag to ${{ github.sha }}"
+        git push
