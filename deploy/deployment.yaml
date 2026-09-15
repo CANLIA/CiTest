@@ -1,0 +1,22 @@
+# argocd make k8s applying deployment by using this yaml
+apiVersion: app/v1
+kind: Deployment
+metadata:
+  name: cicd-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cicd-test
+  template:
+    metadata:
+      labels:
+        app: cicd-test
+    spec:
+      containers:
+      - name: cicd-test
+        image: test
+        ports:
+        - containerPort: 8888
+      imagePullSecrets:
+      - name: aliyun-registry-secret
