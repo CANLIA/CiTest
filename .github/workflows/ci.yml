@@ -48,14 +48,17 @@ jobs:
     - name: 6. [CI/CD 桥接] 自动修改 YAML 并推送到 GitHub
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
-        # 1. 告诉 Git 机器人我是谁
+        # 配置机器人的 Git 身份
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        
-        # 2. 用 Linux 的 sed 命令，暴力替换 deployment.yaml 里的旧标签 (或者 Helm 的 values.yaml 里的 tag)
-        sed -i "s|image: .*:.*|image: crpi-...aliyuncs.com/canlia-sre/ci_test:${{ github.sha }}|g" deploy/deployment.yaml
-        
-        # 3. 机器人自己把改好的 YAML 提交并 push 到 main 分支
+
+        # 定义变量
+        IMAGE_URL="crpi-xb7f9irfobdd1w7v.cn-hangzhou.personal.cr.aliyuncs.com/canlia-sre/ci_test"
+
+        # 暴力替换 deployment.yaml 中的 image 字段为最新防伪码
+        sed -i "s|image: .*|image: ${IMAGE_URL}:${{ github.sha }}|g" deploy/deployment.yaml
+
+        # 机器人提交代码
         git add deploy/deployment.yaml
         git commit -m "🤖 CD Trigger: update image tag to ${{ github.sha }}"
         git push
