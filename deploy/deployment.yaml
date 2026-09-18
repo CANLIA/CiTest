@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: cicd-test
-        image: crpi-xb7f9irfobdd1w7v.cn-hangzhou.personal.cr.aliyuncs.com/canlia-sre/ci_test:437c39edb1d192cdcbad052989fe9e57ea1fa79c
+        image: crpi-xb7f9irfobdd1w7v.cn-hangzhou.personal.cr.aliyuncs.com/canlia-sre/ci_test:d70e0c0393d7ebc615be092b31855229849351bb
         ports:
         - containerPort: 8888
       imagePullSecrets:
