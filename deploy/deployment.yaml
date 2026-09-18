@@ -1,5 +1,5 @@
 # argocd make k8s applying deployment by using this yaml
-apiVersion: app/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cicd-test
